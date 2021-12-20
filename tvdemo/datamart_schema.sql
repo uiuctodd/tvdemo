@@ -31,3 +31,12 @@ CREATE TABLE shows (
 	)
 ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE `show_types` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `code` varchar(32) NOT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `code` (`code`)
+  ) 
+ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
