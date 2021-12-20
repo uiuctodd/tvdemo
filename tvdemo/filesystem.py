@@ -45,7 +45,7 @@ def show_data_filepath(date):
 # make a filename for the episode data files
 #########-#########-#########-#########-#########-#########-#########-#########
 def episode_data_filepath(date):
-  d = dirname('sl')
+  d = dirname('ed')
   return d + 'ep_data_' + date
 
 #########-#########-#########-#########-#########-#########-#########-#########

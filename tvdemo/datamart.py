@@ -80,19 +80,21 @@ def fetch_set(q, param=None):
   return result
 
 #########-#########-#########-#########-#########-#########-#########-#########-
-# SQL to create a temporary table to load shows
+# SQL to create/drop a temporary table to load shows
+# load data and merge
 #########-#########-#########-#########-#########-#########-#########-#########-
 def create_show_load_table_q():
   q = '''create temporary table load_shows (
            `id` mediumint(8) unsigned NOT NULL,   
            `name` varchar(128) NOT NULL,
-           `show_type` varchar(32) NOT NULL,
+           `show_type_str` varchar(32) NOT NULL,
            `language` varchar(32) NOT NULL,
            `runtime` decimal(5,1) DEFAULT NULL,
            `premiered` date DEFAULT NULL,
            `ended` date DEFAULT NULL,
            `genres` varchar(128) NOT NULL,
            `src_url` varchar(255) NOT NULL,
+           `show_type` int(11)
           ) ENGINE=MEMORY CHARSET=utf8 '''
   return q
   
@@ -100,14 +102,94 @@ def drop_show_load_table_q():
   return 'DROP TEMPORARY TABLE IF EXISTS load_shows';
 
 def load_shows_q(date):
-  path = FS.show_data_file_path(date);
+  path = FS.show_data_filepath(date);
+  q = 'LOAD DATA LOCAL INFILE "' + path + '"' + \
+      ''' into table load_shows CHARACTER SET utf8 
+          FIELDS TERMINATED BY ',' ENCLOSED BY '"' IGNORE 1 LINES'''
+  return q;
+
+def extract_showtypes_q():
+  q = '''insert ignore into show_types (code) 
+         select show_type_str from load_shows'''
+
+def merge_show_data_q():
+  q = '''INSERT IGNORE INTO shows 
+         SELECT l.id, l.name, t.id, l.language, l.runtime, l.premiered, 
+                l.ended, l.genres, l.src_url
+         FROM load_shows l LEFT JOIN show_types t 
+              ON l.show_type_str = t.code'''
+  return q
 
 #########-#########-#########-#########-#########-#########-#########-#########-
-# main program
+# Load show data for one day
+# There is no need to transactionalize this. If it fails early, the temp table
+# will be dropped on the next attept, and unwritten records re-inserted
+# if two processes attempt this at once, the second one will drop the 
+# table out under the first. The first fails. Looser wins race-to-lock
+#########-#########-#########-#########-#########-#########-#########-#########-
+def load_show_table(date):
+  do_command(drop_show_load_table_q())
+  do_command(create_show_load_table_q())
+  do_command(load_shows_q(date))
+  do_command(merge_show_data_q())
+  do_command(drop_show_load_table_q())
+  return
 
-q = 'select 1'
-result = fetch_rec(q)
-print(result);
+#########-#########-#########-#########-#########-#########-#########-#########-
+# SQL to create/drop a temporary table to load shows
+# load data and merge
+#########-#########-#########-#########-#########-#########-#########-#########-
+def create_ep_load_table_q():
+  q = '''create temporary table load_eps (
+         `id` mediumint(8) unsigned NOT NULL,
+         `airdate` date NOT NULL,
+         `airstamp` datetime NOT NULL,
+         `airtime` time DEFAULT NULL,
+         `name` varchar(128) NOT NULL,
+         `ep_num` decimal(6,1) DEFAULT NULL,
+         `runtime` decimal(5,1) DEFAULT NULL,
+         `season` tinyint(3) unsigned NOT NULL,
+         `ep_type` varchar(32) NOT NULL,
+         `show_id` mediumint(8) unsigned NOT NULL,
+         `src_url` varchar(255) NOT NULL    
+        ) ENGINE=MEMORY CHARSET=utf8 '''
+  return q
+
+def drop_ep_load_table_q():
+  return 'DROP TEMPORARY TABLE IF EXISTS load_eps';
+
+def load_ep_q(date):
+  path = FS.episode_data_filepath(date);
+  q = 'LOAD DATA LOCAL INFILE "' + path + '"' + \
+      ''' into table load_eps CHARACTER SET utf8 
+          FIELDS TERMINATED BY ',' ENCLOSED BY '"' IGNORE 1 LINES'''
+  return q
+
+def merge_ep_data_q():
+  q = '''INSERT IGNORE INTO episodes 
+         SELECT * from load_eps''' 
+  return q
+
+#########-#########-#########-#########-#########-#########-#########-#########-
+# Load epsisode data for one day
+# There is no need to transactionalize this. If it fails early, the temp table
+# will be dropped on the next attept, and unwritten records re-inserted
+# if two processes attempt this at once, the second one will drop the 
+# table out under the first. The first fails. Looser wins race-to-lock
+#########-#########-#########-#########-#########-#########-#########-#########-
+def load_episode_table(date):
+  do_command(drop_ep_load_table_q())
+  do_command(create_ep_load_table_q())
+  do_command(load_ep_q(date))
+  do_command(merge_ep_data_q())
+  do_command(drop_ep_load_table_q())
+  return
+
+  
+#########-#########-#########-#########-#########-#########-#########-#########-
+# main program
+d='2021-12-20'
+load_episode_table(d)
 
 
 

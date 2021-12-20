@@ -20,7 +20,7 @@ ENGINE=InnoDB DEFAULT CHARSET=utf8;
 CREATE TABLE shows (
         id mediumint unsigned NOT NULL,
         name varchar(128) NOT NULL,
-        show_type varchar(32) NOT NULL,
+        show_type int(11) DEFAULT NULL,
 	language varchar(32) NOT NULL,
 	runtime decimal(5,1),
 	premiered date,

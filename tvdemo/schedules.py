@@ -3,10 +3,7 @@
 #########-#########-#########-#########-#########-#########-#########-#########-
 
 import logging
-import datetime
 import pandas as pd
-import pytz 
-import random
 import urllib
 
 import tvdemo.filesystem as FS
