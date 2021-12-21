@@ -39,4 +39,34 @@ CREATE TABLE `show_types` (
   ) 
 ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE daily_views (
+      id int(11) NOT NULL AUTO_INCREMENT,
+      viewdate date NOT NULL,
+      episode mediumint unsigned NOT NULL,
+      show_id mediumint unsigned NOT NULL,
+      country char(2) not null,
+      views mediumint unsigned NOT NULL,
+      hours_watched mediumint unsigned NOT NULL,
+      PRIMARY KEY (`id`),
+      UNIQUE KEY `dayshow` (viewdate, episode, country)
+  )
+ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE show_viewers (
+     id int(11) NOT NULL AUTO_INCREMENT,
+     week_start date NOT NULL,
+     show_id mediumint unsigned NOT NULL,
+     country char(2) not null,
+     viwer_count int(11) unsigned NOT NULL,
+     MHPV decimal(4,1),                      /* mean hours watched per viewer */
+     VCH int(11) unsigned NOT NULL,          /* count of viwers who watch many hours of this show*/
+     VCL int(11) unsigned NOT NULL,          /* count of viwers who watch few hours of this show  */
+     VCML int(11) unsigned NOT NULL,         /* count of viwers who are multilingual */
+     MNSW decimal(4,1),                      /* mean number of other shows watched   */
+     VSS mediumint unsigned NOT NULL,        /* number of viewrs who watched only this one show */
+     VMS mediumint unsigned NOT NULL,        /* number of viewrs who watched several other shows */
+     PRIMARY KEY (`id`),
+     UNIQUE KEY `dayshow` (week_start, show_id, country)
+  )
+ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
