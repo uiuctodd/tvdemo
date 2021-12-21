@@ -11,9 +11,10 @@ from tvdemo.config import get_config
 stems = { 'sl' : '/show_lookup/',
           'sd' : '/show_data/',
           'ed' : '/episode_data/',
-          'RPE': '/play_event_files/',
+          'rpe': '/play_event_files/',
           'pd' : '/play_data/',
           'up' : '/user_profile/',
+          'us' : '/usershow/',
         }
 
 #########-#########-#########-#########-#########-#########-#########-#########
@@ -52,8 +53,22 @@ def episode_data_filepath(date):
 # make a filename for the raw play event files
 #########-#########-#########-#########-#########-#########-#########-#########
 def play_event_filepath(date, hour):
-  return
+  d = dirname('rpe')
+  return d + '_'.join(['play_events', date, hour])
 
+#########-#########-#########-#########-#########-#########-#########-#########
+# make a filename for the summary play data
+#########-#########-#########-#########-#########-#########-#########-#########
+def play_data_filepath(date, hour):
+  d = dirname('pd')
+  return d + '_'.join(['play_data', date, hour])
+
+#########-#########-#########-#########-#########-#########-#########-#########
+# make a filename for intermidiate user-show counts
+#########-#########-#########-#########-#########-#########-#########-#########
+def usershow_filepath(date, hour):
+  d = dirname('us')
+  return d + '_'.join(['usershow', date, hour])
 
 #########-#########-#########-#########-#########-#########-#########-#########
 # check that a directory exists, consider making it.

@@ -1,30 +1,23 @@
 #! /usr/bin/python3
 #########-#########-#########-#########-#########-#########-#########-#########
-# Adapted from assignment document-- create a file of sample events
-# methods changed to support sensible date:
-#    - user bound to one country
-#    - some users have multiple views in same day (limited pool)
-#    - episodes all broadcast in the appropriate day
+# A pipeline to sumarise many (100M/day) play events into a simple feed
+# (However, we will cheat and do just one hour)
 
 import sys
-import pytz
-import random
-import pandas
 from pyspark.sql import SparkSession 
 import tvdemo.filesystem as FS 
 from tvdemo.sparkpipes import cluster as get_sc
 
-appname='tvdemo'
+appname='tvdemo_view_pipe'  # pass this to the spark cluster
 
 # Mapper for main pipleline
 # emit date-episode-country, 1-playtime
 def emitter(r):
   return ( (r[1], r[0], r[2]), (1,float(r[3])))
 
-# Mapper to unpack structure at end. Emits normal colums
+# Mapper to unpack obtuse structure at end. Emits normal columns
 def unpacker(r):
   return (r[0][0], r[0][1], r[0][2], r[1][0], r[1][1])
-
 
 #########-#########-#########-#########-#########-#########-#########-#########
 # main program
